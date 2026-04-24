@@ -75,7 +75,7 @@ def cli():
 # ---------- list ----------
 
 @cli.command("list")
-@click.option("--type", "type_filter", type=click.Choice(["decision", "fact", "todo"]))
+@click.option("--type", "type_filter", type=click.Choice(["decision", "fact", "todo", "note"]))
 @click.option("--limit", default=10, show_default=True)
 def list_cmd(type_filter, limit):
     """List recent entries."""
@@ -134,7 +134,7 @@ def show(entry_id):
 
 @cli.command()
 @click.argument("query")
-@click.option("--type", "type_filter", type=click.Choice(["decision", "fact", "todo"]))
+@click.option("--type", "type_filter", type=click.Choice(["decision", "fact", "todo", "note"]))
 @click.option("--limit", default=10, show_default=True)
 def search(query, type_filter, limit):
     """Hybrid search (FTS + vector)."""

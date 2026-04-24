@@ -114,6 +114,30 @@ async def record_todo(
 
 
 @mcp.tool()
+async def record_note(
+    title: str,
+    content: str,
+    tags: str = "",
+    keywords: str = "",
+) -> dict:
+    """Record a free-form note from a conversation — context, explanations, or summaries
+    that don't fit as a decision, fact, or todo."""
+    try:
+        con = _get_con()
+        embedding = await embed(f"{title} {content} {keywords}")
+        entry_id = insert_entry(
+            con, type="note", title=title, body=content,
+            tags=tags or None, keywords=keywords or None,
+        )
+        upsert_embedding(con, entry_id, embedding)
+        con.commit()
+        con.close()
+        return {"id": entry_id, "ok": True}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+@mcp.tool()
 async def update_todo(
     entry_id: int,
     status: str,

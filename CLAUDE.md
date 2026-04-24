@@ -13,6 +13,13 @@ related entries so the graph stays connected.
 - `record_fact` for load-bearing facts about this system: API endpoints,
   invariants, conventions, where things live, non-obvious configuration.
 - `record_todo` when we identify follow-up work but don't do it now.
+- `record_note` in two situations:
+  1. **User-triggered**: the user says "note", "record this as a note",
+     "save that", or similar — record immediately without asking.
+  2. **Conservative auto-record**: a conversation surfaces meaningful context
+     about the project (its purpose, structure, history, how something works)
+     that isn't derivable from the code or git history. Summarise it; don't
+     transcribe the raw exchange. Skip ephemeral or obvious content.
 
 ### When to link (without asking)
 
