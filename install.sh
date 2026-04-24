@@ -3,7 +3,7 @@
 # Usage: bash install.sh
 set -euo pipefail
 
-REPO="https://github.com/cactixxx/brain"
+REPO="https://github.com/cactixxx/claude_brain"
 DEST="${CLAUDE_BRAIN_INSTALL_DIR:-$HOME/.claude_brain}"
 MODEL="nomic-embed-text"
 

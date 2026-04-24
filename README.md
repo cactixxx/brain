@@ -26,7 +26,7 @@ Installs all dependencies (Python, Ollama, sqlite3), pulls the embedding model,
 and sets Ollama to start on boot:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/cactixxx/brain/master/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/cactixxx/claude_brain/master/install.sh)
 ```
 
 Installs to `~/.claude_brain` by default. Override with `CLAUDE_BRAIN_INSTALL_DIR=/custom/path`.
@@ -36,7 +36,7 @@ Installs to `~/.claude_brain` by default. Override with `CLAUDE_BRAIN_INSTALL_DI
 Requirements: Python 3.11+, [Ollama](https://ollama.com) with `nomic-embed-text` pulled.
 
 ```bash
-git clone https://github.com/cactixxx/brain ~/.claude_brain
+git clone https://github.com/cactixxx/claude_brain ~/.claude_brain
 cd ~/.claude_brain
 python3 -m venv .venv
 .venv/bin/pip install -e .
