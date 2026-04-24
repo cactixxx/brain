@@ -3,13 +3,16 @@ import httpx
 
 OLLAMA_URL = "http://localhost:11334/api/embeddings"
 MODEL = "nomic-embed-text"
+# nomic-embed-text context is 2048 tokens; 2000 chars (~500 tokens) is a safe, fast limit
+_MAX_CHARS = 2000
 
 
 async def embed(text: str) -> list[float]:
+    text = text[:_MAX_CHARS]
     last_exc: Exception | None = None
     for attempt in range(3):
         try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
+            async with httpx.AsyncClient(timeout=60.0) as client:
                 resp = await client.post(OLLAMA_URL,
                                          json={"model": MODEL, "prompt": text})
                 resp.raise_for_status()
