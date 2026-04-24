@@ -80,6 +80,7 @@ claude mcp add claude_brain \
 
 ```bash
 cd /your/project
+source ~/.bashrc
 CLAUDE_BRAIN_DB=./claude_brain.db claude_brain list       # empty at first
 # start Claude Code — it will call record_* tools automatically
 claude_brain stats
