@@ -118,6 +118,21 @@ claude_brain stats
 claude_brain export [--format markdown|json|dot]
 ```
 
+## MCP tools
+
+These are the functions Claude calls automatically during a conversation. You never need to invoke them yourself — they fire in the background as Claude works.
+
+| Tool | What it stores | When Claude calls it |
+|------|---------------|----------------------|
+| `record_decision` | An architectural or technical choice, its rationale, and what was considered and rejected | When a design or technology choice is finalised that you would want to find again later |
+| `record_fact` | A load-bearing fact: API endpoints, invariants, conventions, where things live, non-obvious config | When something true about the system is established or discovered |
+| `record_todo` | A follow-up task that was identified but not done right now | When work is deferred — "we should do X later" |
+| `update_todo` | Changes a todo's status to `active`, `done`, or `cancelled` | When a previously recorded todo is completed or dropped |
+| `link_entries` | A typed edge between two existing entries | After recording an entry, if it clearly connects to an earlier one |
+| `search_memory` | _(read-only)_ Hybrid full-text + vector search across all entries | Before designing something new, or when answering "what did we decide / why / how does X work" |
+| `list_recent_entries` | _(read-only)_ The most recently created entries | To get a quick overview of what has been recorded, or to check what tags are in use |
+| `explore` | _(read-only)_ Graph traversal outward from one entry up to N hops | When an impact or blast-radius question requires following the chain of connections from a single entry |
+
 ## Edge kinds
 
 | Kind | When to use |
