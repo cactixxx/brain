@@ -4,14 +4,14 @@ from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
-from brain.db import (connect, insert_entry, update_entry, upsert_embedding,
+from claude_brain.db import (connect, insert_entry, update_entry, upsert_embedding,
                       supersede, create_edge, delete_edge, query_edges,
                       traverse, get_entry, list_recent, hybrid_search)
-from brain.embeddings import embed
+from claude_brain.embeddings import embed
 
-DB_PATH = Path(os.environ.get("BRAIN_DB", "./brain.db"))
+DB_PATH = Path(os.environ.get("CLAUDE_BRAIN_DB", "./claude_brain.db"))
 
-mcp = FastMCP("project-brain")
+mcp = FastMCP("claude_brain")
 
 
 def _get_con():

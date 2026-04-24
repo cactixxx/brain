@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# install.sh — set up project-brain on a fresh server
+# install.sh — set up claude_brain on a fresh server
 # Usage: bash install.sh
 set -euo pipefail
 
 REPO="https://github.com/cactixxx/brain"
-DEST="${BRAIN_INSTALL_DIR:-$HOME/.brain}"
+DEST="${CLAUDE_BRAIN_INSTALL_DIR:-$HOME/.claude_brain}"
 MODEL="nomic-embed-text"
 
-info()  { echo "[brain] $*"; }
-error() { echo "[brain] ERROR: $*" >&2; exit 1; }
+info()  { echo "[claude_brain] $*"; }
+error() { echo "[claude_brain] ERROR: $*" >&2; exit 1; }
 
 # ── Prerequisites ────────────────────────────────────────────────────────────
 
@@ -61,13 +61,13 @@ else
     ollama pull "$MODEL"
 fi
 
-# ── brain ────────────────────────────────────────────────────────────────────
+# ── claude_brain ─────────────────────────────────────────────────────────────
 
 if [ -d "$DEST/.git" ]; then
     info "Updating existing install at $DEST..."
     git -C "$DEST" pull --ff-only
 else
-    info "Cloning brain to $DEST..."
+    info "Cloning claude_brain to $DEST..."
     git clone "$REPO" "$DEST"
 fi
 
@@ -81,7 +81,7 @@ info ""
 info "Installation complete."
 info ""
 info "Register with Claude Code (run inside your project directory):"
-info "  claude mcp add project-brain $DEST/.venv/bin/python -- -m brain.server --env BRAIN_DB=./brain.db"
+info "  claude mcp add claude_brain $DEST/.venv/bin/python -- -m claude_brain.server --env CLAUDE_BRAIN_DB=./claude_brain.db"
 info ""
 info "Or copy the example MCP config:"
 info "  cp $DEST/.mcp.json.example /your/project/.mcp.json"

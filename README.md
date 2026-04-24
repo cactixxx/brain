@@ -1,4 +1,4 @@
-# project-brain
+# claude_brain
 
 A local MCP server that gives Claude Code persistent memory for a project.
 Stores decisions, facts, and todos in SQLite (FTS5 + vector search via sqlite-vec),
@@ -13,15 +13,15 @@ and sets Ollama to start on boot:
 bash <(curl -fsSL https://raw.githubusercontent.com/cactixxx/brain/master/install.sh)
 ```
 
-Installs to `~/.brain` by default. Override with `BRAIN_INSTALL_DIR=/custom/path`.
+Installs to `~/.claude_brain` by default. Override with `CLAUDE_BRAIN_INSTALL_DIR=/custom/path`.
 
 ## Manual install
 
 Requirements: Python 3.11+, [Ollama](https://ollama.com) with `nomic-embed-text` pulled.
 
 ```bash
-git clone https://github.com/cactixxx/brain ~/.brain
-cd ~/.brain
+git clone https://github.com/cactixxx/brain ~/.claude_brain
+cd ~/.claude_brain
 python3 -m venv .venv
 .venv/bin/pip install -e .
 ```
@@ -37,42 +37,69 @@ Confirm everything works:
 **Option A — copy the example config:**
 
 ```bash
-cp ~/brain/.mcp.json.example /your/project/.mcp.json
-# edit .mcp.json: update the command path and BRAIN_DB path
+cp ~/.claude_brain/.mcp.json.example /your/project/.mcp.json
+# edit .mcp.json: update the command path and CLAUDE_BRAIN_DB path
 ```
 
 **Option B — use `claude mcp add`:**
 
+This registers the claude_brain server as a project-scoped MCP server — one global entry for the project on this server, running in MCP mode.
+
 ```bash
 cd /your/project
-claude mcp add project-brain \
-  ~/.brain/.venv/bin/python -- -m brain.server
+claude mcp add claude_brain \
+  ~/.claude_brain/.venv/bin/python -- -m claude_brain.server \
+  --env CLAUDE_BRAIN_DB=~/.claude_brain/claude_brain.db
 ```
-
-Then set `BRAIN_DB` in the server env or export it in your shell.
 
 ## Verify it works
 
 ```bash
 cd /your/project
-BRAIN_DB=./brain.db brain list       # empty at first
+CLAUDE_BRAIN_DB=./claude_brain.db claude_brain list       # empty at first
 # start Claude Code — it will call record_* tools automatically
-brain stats
-brain list
-brain show 1
+claude_brain stats
+claude_brain list
+claude_brain show 1
 ```
+
+## Disabling the MCP temporarily
+
+Sometimes you want Claude to work on something — a spike, a throwaway experiment,
+a sensitive refactor — without recording anything to the brain. There are two ways:
+
+**Per-session (recommended):** Run `/mcp` inside Claude Code to see all registered
+MCP servers. Select `claude_brain` and toggle it off. It stays off for that session
+only and comes back automatically next time.
+
+**Remove from project config:** If you want it gone until you explicitly re-add it:
+
+```bash
+claude mcp remove claude_brain
+```
+
+Re-add it when you are ready to resume recording:
+
+```bash
+claude mcp add claude_brain \
+  ~/.claude_brain/.venv/bin/python -- -m claude_brain.server \
+  --env CLAUDE_BRAIN_DB=~/.claude_brain/claude_brain.db
+```
+
+**In-conversation:** You can also just tell Claude "don't record anything from this
+conversation" and it will respect that without needing to touch the config.
 
 ## CLI reference
 
 ```
-brain list [--type decision|fact|todo] [--limit N]
-brain show ID
-brain search QUERY [--type X] [--limit N]
-brain link FROM_ID TO_ID KIND [--note TEXT]
-brain unlink EDGE_ID
-brain graph ID [--depth N] [--kinds KIND1,KIND2]
-brain stats
-brain export [--format markdown|json|dot]
+claude_brain list [--type decision|fact|todo] [--limit N]
+claude_brain show ID
+claude_brain search QUERY [--type X] [--limit N]
+claude_brain link FROM_ID TO_ID KIND [--note TEXT]
+claude_brain unlink EDGE_ID
+claude_brain graph ID [--depth N] [--kinds KIND1,KIND2]
+claude_brain stats
+claude_brain export [--format markdown|json|dot]
 ```
 
 ## Edge kinds
@@ -94,7 +121,7 @@ Paste this into any project's `CLAUDE.md` to enable automatic memory use:
 ```markdown
 ## Project memory
 
-This project uses a memory MCP server called `project-brain`. Use its tools
+This project uses a memory MCP server called `claude_brain`. Use its tools
 during our conversations to record and recall durable knowledge, and link
 related entries so the graph stays connected.
 

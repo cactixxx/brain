@@ -5,11 +5,11 @@ from pathlib import Path
 
 import click
 
-from brain.db import (connect, get_entry, list_recent, query_edges, traverse,
+from claude_brain.db import (connect, get_entry, list_recent, query_edges, traverse,
                       create_edge, delete_edge, hybrid_search, search_fts)
-from brain.embeddings import embed_sync
+from claude_brain.embeddings import embed_sync
 
-DB_PATH = Path(os.environ.get("BRAIN_DB", "./brain.db"))
+DB_PATH = Path(os.environ.get("CLAUDE_BRAIN_DB", "./claude_brain.db"))
 
 
 def _con():
@@ -28,7 +28,7 @@ def _status_style(status: str) -> str:
 
 @click.group()
 def cli():
-    """project-brain — local project memory."""
+    """claude_brain — local project memory."""
 
 
 # ---------- list ----------
@@ -229,7 +229,7 @@ def export(fmt):
         click.echo(json.dumps({"entries": entries_list, "edges": edges_list}, indent=2))
 
     elif fmt == "dot":
-        lines = ["digraph brain {", '  node [shape=box fontname="Helvetica"]']
+        lines = ["digraph claude_brain {", '  node [shape=box fontname="Helvetica"]']
         for e in all_entries:
             label = e["title"].replace('"', '\\"')
             color = {"decision": "lightblue", "fact": "lightyellow", "todo": "lightgreen"}.get(e["type"], "white")

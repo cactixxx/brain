@@ -1,10 +1,10 @@
 {
   "mcpServers": {
-    "project-brain": {
-      "command": "/root/brain/.venv/bin/python",
-      "args": ["-m", "brain.server"],
+    "claude_brain": {
+      "command": "~/.claude_brain/.venv/bin/python",
+      "args": ["-m", "claude_brain.server"],
       "env": {
-        "BRAIN_DB": "/root/brain/brain.db"
+        "CLAUDE_BRAIN_DB": "~/.claude_brain/claude_brain.db"
       }
     }
   }
