@@ -62,7 +62,8 @@ async def record_decision(
             create_edge(con, entry_id, supersedes, "replaces")
         con.commit()
         con.close()
-        return {"id": entry_id, "ok": True}
+        suffix = f" (supersedes #{supersedes})" if supersedes else ""
+        return {"id": entry_id, "ok": True, "recorded": f"decision #{entry_id}: {title}{suffix}"}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
@@ -85,7 +86,7 @@ async def record_fact(
         upsert_embedding(con, entry_id, embedding)
         con.commit()
         con.close()
-        return {"id": entry_id, "ok": True}
+        return {"id": entry_id, "ok": True, "recorded": f"fact #{entry_id}: {title}"}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
@@ -108,7 +109,7 @@ async def record_todo(
         upsert_embedding(con, entry_id, embedding)
         con.commit()
         con.close()
-        return {"id": entry_id, "ok": True}
+        return {"id": entry_id, "ok": True, "recorded": f"todo #{entry_id}: {title}"}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
@@ -132,7 +133,47 @@ async def record_note(
         upsert_embedding(con, entry_id, embedding)
         con.commit()
         con.close()
-        return {"id": entry_id, "ok": True}
+        return {"id": entry_id, "ok": True, "recorded": f"note #{entry_id}: {title}"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+@mcp.tool()
+async def record_specs(
+    title: str,
+    description: str,
+    dependencies: str = "",
+    tags: str = "",
+    keywords: str = "",
+    supersedes: int = 0,
+) -> dict:
+    """Record a feature-level specification: what it does, how it works, and what it depends on.
+
+    Call this whenever a new feature is agreed upon or an existing feature's behaviour changes.
+    Superseded specs are kept for history but hidden from normal searches.
+    Use `supersedes` to link to the old spec when a feature changes.
+    Store dependencies (other features/components this relies on) in the `dependencies` field.
+    """
+    try:
+        con = _get_con()
+        embedding = await embed(f"{title} {description} {keywords}")
+        entry_id = insert_entry(
+            con, type="spec", title=title, body=description,
+            alternatives=dependencies or None,
+            tags=tags or None, keywords=keywords or None,
+        )
+        upsert_embedding(con, entry_id, embedding)
+        if supersedes:
+            target = get_entry(con, supersedes)
+            if target is None:
+                con.close()
+                return {"ok": False, "error": f"Entry {supersedes} not found"}
+            supersede(con, supersedes, entry_id)
+            create_edge(con, entry_id, supersedes, "replaces")
+        con.commit()
+        con.close()
+        suffix = f" (supersedes #{supersedes})" if supersedes else ""
+        return {"id": entry_id, "ok": True, "recorded": f"spec #{entry_id}: {title}{suffix}"}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
@@ -238,12 +279,16 @@ async def search_memory(
 @mcp.tool()
 async def list_recent_entries(
     type: str = "",
+    status: str = "",
     limit: int = 10,
 ) -> list:
-    """List the most recently created entries, newest first."""
+    """List the most recently created entries, newest first.
+
+    Use type='todo' with status='active' for open todos, status='done' for completed ones.
+    """
     try:
         con = _get_con()
-        rows = list_recent(con, type_filter=type or None, limit=limit)
+        rows = list_recent(con, type_filter=type or None, status_filter=status or None, limit=limit)
         result = [_row_to_dict(r) for r in rows]
         con.close()
         return result

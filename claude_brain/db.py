@@ -26,7 +26,64 @@ def _init_schema(con: sqlite3.Connection) -> None:
         CREATE VIRTUAL TABLE IF NOT EXISTS entries_vec
         USING vec0(id INTEGER PRIMARY KEY, embedding FLOAT[768])
     """)
+    _migrate_add_spec_type(con)
     con.commit()
+
+
+def _migrate_add_spec_type(con: sqlite3.Connection) -> None:
+    """Widen the entries.type CHECK constraint to include 'spec' if needed."""
+    row = con.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='entries'"
+    ).fetchone()
+    if row is None or "'spec'" in row[0]:
+        return
+    con.executescript("""
+        PRAGMA foreign_keys = OFF;
+
+        CREATE TABLE entries_v2 (
+            id              INTEGER PRIMARY KEY,
+            type            TEXT NOT NULL CHECK(type IN ('decision','fact','todo','note','spec')),
+            title           TEXT NOT NULL,
+            body            TEXT NOT NULL,
+            alternatives    TEXT,
+            tags            TEXT,
+            keywords        TEXT,
+            status          TEXT NOT NULL DEFAULT 'active'
+                                CHECK(status IN ('active','superseded','done','cancelled')),
+            superseded_by   INTEGER REFERENCES entries_v2(id),
+            created_at      INTEGER NOT NULL,
+            updated_at      INTEGER NOT NULL
+        );
+
+        INSERT INTO entries_v2 SELECT * FROM entries;
+        DROP TABLE entries;
+        ALTER TABLE entries_v2 RENAME TO entries;
+
+        CREATE INDEX IF NOT EXISTS idx_entries_type       ON entries(type);
+        CREATE INDEX IF NOT EXISTS idx_entries_status     ON entries(status);
+        CREATE INDEX IF NOT EXISTS idx_entries_created_at ON entries(created_at);
+
+        CREATE TRIGGER IF NOT EXISTS entries_fts_insert AFTER INSERT ON entries BEGIN
+            INSERT INTO entries_fts(rowid, title, body, tags, keywords)
+            VALUES (new.id, new.title, new.body, COALESCE(new.tags,''), COALESCE(new.keywords,''));
+        END;
+
+        CREATE TRIGGER IF NOT EXISTS entries_fts_update AFTER UPDATE ON entries BEGIN
+            INSERT INTO entries_fts(entries_fts, rowid, title, body, tags, keywords)
+            VALUES ('delete', old.id, old.title, old.body, COALESCE(old.tags,''), COALESCE(old.keywords,''));
+            INSERT INTO entries_fts(rowid, title, body, tags, keywords)
+            VALUES (new.id, new.title, new.body, COALESCE(new.tags,''), COALESCE(new.keywords,''));
+        END;
+
+        CREATE TRIGGER IF NOT EXISTS entries_fts_delete AFTER DELETE ON entries BEGIN
+            INSERT INTO entries_fts(entries_fts, rowid, title, body, tags, keywords)
+            VALUES ('delete', old.id, old.title, old.body, COALESCE(old.tags,''), COALESCE(old.keywords,''));
+        END;
+
+        INSERT INTO entries_fts(entries_fts) VALUES('rebuild');
+
+        PRAGMA foreign_keys = ON;
+    """)
 
 
 # ---------- writes ----------
@@ -91,14 +148,17 @@ def get_entry(con: sqlite3.Connection, entry_id: int) -> sqlite3.Row | None:
 
 
 def list_recent(con: sqlite3.Connection, type_filter: str | None = None,
+                status_filter: str | None = None,
                 limit: int = 20) -> list[sqlite3.Row]:
+    where, params = [], []
     if type_filter:
-        return con.execute(
-            "SELECT * FROM entries WHERE type=? ORDER BY created_at DESC LIMIT ?",
-            (type_filter, limit),
-        ).fetchall()
+        where.append("type = ?"); params.append(type_filter)
+    if status_filter:
+        where.append("status = ?"); params.append(status_filter)
+    clause = ("WHERE " + " AND ".join(where)) if where else ""
+    params.append(limit)
     return con.execute(
-        "SELECT * FROM entries ORDER BY created_at DESC LIMIT ?", (limit,)
+        f"SELECT * FROM entries {clause} ORDER BY created_at DESC LIMIT ?", params
     ).fetchall()
 
 

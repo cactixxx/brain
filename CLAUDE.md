@@ -6,6 +6,13 @@ related entries so the graph stays connected.
 
 ### When to record (without asking)
 
+- `record_specs` whenever a new feature is requested or an existing feature's
+  behaviour changes. Any user request to add or remove a feature is already an
+  agreement — record it immediately. Include what the feature does, how it
+  works, and what it depends on. When a spec changes, pass `supersedes` with
+  the old spec's id so history is preserved. You may ask clarifying questions
+  before implementing, but the request itself constitutes the spec.
+  Do NOT call `record_specs` for bug fixes or debugging of existing behaviour.
 - `record_decision` whenever we finalize an architectural or technical choice
   we'd want to find again later. Always include the rationale and what was
   rejected (`alternatives`). Populate `keywords` with 3–5 synonyms or
@@ -48,6 +55,10 @@ target entry rather than guessing its id.
 - When I ask "what did we decide", "why did we", "how does X work", or
   "what's affected by Y" — search before answering. For impact/blast-radius
   questions, follow up with `explore` on the most relevant hit.
+- When I ask about specs ("what is the spec for X", "how does Y work"), search
+  with `type=spec`. Only show active specs by default; use
+  `include_superseded=true` only when I explicitly ask for spec history or
+  "what changed".
 
 ### Style
 
@@ -63,3 +74,28 @@ target entry rather than guessing its id.
 Don't edit the old entry. Call `record_decision` for the new one and set
 `supersedes` to the old entry's id — this marks the old one and creates
 a `replaces` edge automatically. This preserves history and traversability.
+
+### Keyword triggers
+
+The user can type a bare keyword to trigger a brain action. Recognise these
+patterns (case-insensitive, keyword at the start of the message):
+
+| User types | Action |
+|---|---|
+| `decision: <text>` | Call `record_decision` using `<text>` as title/rationale |
+| `fact: <text>` | Call `record_fact` using `<text>` as title/content |
+| `note: <text>` | Call `record_note` using `<text>` as title/content |
+| `todo: <text>` | Call `record_todo` using `<text>` as title |
+| `spec: <text>` | Call `record_specs` using `<text>` as title/description |
+| `decision` (bare) | Extract the decision from recent conversation context; ask only if ambiguous |
+| `fact` (bare) | Extract the fact from recent conversation context; ask only if ambiguous |
+| `note` (bare) | Extract the note from recent conversation context; ask only if ambiguous |
+| `todo` (bare) | Extract the todo from recent conversation context; ask only if ambiguous |
+| `spec` (bare) | Extract the spec from recent conversation context; ask only if ambiguous |
+| `list todo` | Call `list_recent_entries(type="todo", status="active")` and display results |
+| `list done` | Call `list_recent_entries(type="todo", status="done")` and display results |
+
+**Deduplication**: if you already called the same `record_*` tool for the same
+content earlier in this response (e.g. you auto-recorded a spec and the user
+then types `spec`), reply with `<type> already recorded (#<id>)` instead of
+recording again.

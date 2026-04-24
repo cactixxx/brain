@@ -2,7 +2,7 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS entries (
     id              INTEGER PRIMARY KEY,
-    type            TEXT NOT NULL CHECK(type IN ('decision','fact','todo','note')),
+    type            TEXT NOT NULL CHECK(type IN ('decision','fact','todo','note','spec')),
     title           TEXT NOT NULL,
     body            TEXT NOT NULL,
     alternatives    TEXT,

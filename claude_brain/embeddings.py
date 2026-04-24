@@ -1,7 +1,7 @@
 import asyncio
 import httpx
 
-OLLAMA_URL = "http://localhost:11434/api/embeddings"
+OLLAMA_URL = "http://localhost:11334/api/embeddings"
 MODEL = "nomic-embed-text"
 
 
@@ -16,7 +16,7 @@ async def embed(text: str) -> list[float]:
                 return resp.json()["embedding"]
         except httpx.ConnectError as e:
             raise RuntimeError(
-                "Cannot reach Ollama at http://localhost:11434. "
+                "Cannot reach Ollama at http://localhost:11334. "
                 "Is it running? Try: ollama serve"
             ) from e
         except Exception as e:
