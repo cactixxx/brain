@@ -9,7 +9,7 @@ from claude_brain.db import (connect, insert_entry, update_entry, upsert_embeddi
                       traverse, get_entry, list_recent, hybrid_search)
 from claude_brain.embeddings import embed
 
-DB_PATH = Path(os.environ.get("CLAUDE_BRAIN_DB", "./claude_brain.db"))
+DB_PATH = Path(os.path.expanduser(os.environ.get("CLAUDE_BRAIN_DB", "./claude_brain.db")))
 
 mcp = FastMCP("claude_brain")
 

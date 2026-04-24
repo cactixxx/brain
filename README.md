@@ -54,6 +54,7 @@ Confirm everything works:
 
 ```bash
 cp ~/.claude_brain/.mcp.json.example /your/project/.mcp.json
+cp ~/.claude_brain/CLAUDE.md /your/project/CLAUDE.md
 # edit .mcp.json: update the command path and CLAUDE_BRAIN_DB path
 ```
 
