@@ -62,11 +62,14 @@ info "Python: $(python3 --version)"
 
 # ── Ollama ───────────────────────────────────────────────────────────────────
 
+# All ollama CLI commands must target port 11334
+export OLLAMA_HOST="http://localhost:11334"
+
 if ! command -v ollama &>/dev/null; then
     info "Installing Ollama..."
     curl -fsSL https://ollama.com/install.sh | sh
 else
-    info "Ollama already installed: $(ollama --version)"
+    info "Ollama already installed."
 fi
 
 # Configure Ollama to listen on port 11334 (all interfaces)
@@ -76,23 +79,31 @@ if [ -f "$OLLAMA_SERVICE" ] && ! grep -q "OLLAMA_HOST" "$OLLAMA_SERVICE"; then
     info "Set OLLAMA_HOST=0.0.0.0:11334 in $OLLAMA_SERVICE"
 fi
 
-# Enable and start the systemd service
-systemctl daemon-reload
-systemctl enable ollama
-systemctl restart ollama
+# Start Ollama only if it is not already responding
+if curl -sf http://localhost:11334/ &>/dev/null; then
+    info "Ollama is already running on port 11334 — leaving it alone."
+else
+    info "Starting Ollama via systemd..."
+    systemctl daemon-reload
+    systemctl enable ollama
+    systemctl restart ollama
 
-# Wait for Ollama to be ready
-info "Waiting for Ollama to be ready..."
-for i in $(seq 1 15); do
-    if curl -sf http://localhost:11334/ &>/dev/null; then
-        break
+    info "Waiting for Ollama to be ready..."
+    ready=0
+    for i in $(seq 1 10); do
+        if curl -sf http://localhost:11334/ &>/dev/null; then
+            ready=1
+            break
+        fi
+        sleep 1
+    done
+    if [ "$ready" -eq 0 ]; then
+        error "Ollama did not start after 10 seconds. Please run: ollama serve"
     fi
-    sleep 2
-done
-curl -sf http://localhost:11334/ &>/dev/null || error "Ollama did not start in time"
+fi
 
-# Pull the embedding model
-if ollama list | grep -q "^$MODEL"; then
+# Pull the embedding model if not already present
+if ollama list 2>/dev/null | grep -q "^$MODEL"; then
     info "Model $MODEL already present"
 else
     info "Pulling $MODEL (this may take a minute)..."
