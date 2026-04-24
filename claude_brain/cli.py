@@ -14,8 +14,16 @@ def _resolve_db_path() -> Path:
     if "CLAUDE_BRAIN_DB" in os.environ:
         return Path(os.environ["CLAUDE_BRAIN_DB"])
 
-    # Search cwd and parents for .mcp.json
-    for directory in [Path.cwd(), *Path.cwd().parents]:
+    # Search cwd and parents for .mcp.json.
+    # Path.cwd() calls os.getcwd() which can fail in some SSH/container setups
+    # when the kernel can't resolve the working directory; fall back to $PWD.
+    try:
+        cwd = Path.cwd()
+    except FileNotFoundError:
+        pwd = os.environ.get("PWD", "")
+        cwd = Path(pwd) if pwd else None
+
+    for directory in ([cwd, *cwd.parents] if cwd else []):
         candidate = directory / ".mcp.json"
         if candidate.exists():
             try:
