@@ -31,19 +31,27 @@ else
     info "Ollama already installed: $(ollama --version)"
 fi
 
+# Configure Ollama to listen on port 11334 (all interfaces)
+OLLAMA_SERVICE="/etc/systemd/system/ollama.service"
+if [ -f "$OLLAMA_SERVICE" ] && ! grep -q "OLLAMA_HOST" "$OLLAMA_SERVICE"; then
+    sed -i '/^\[Service\]/a Environment="OLLAMA_HOST=0.0.0.0:11334"' "$OLLAMA_SERVICE"
+    info "Set OLLAMA_HOST=0.0.0.0:11334 in $OLLAMA_SERVICE"
+fi
+
 # Enable and start the systemd service
+systemctl daemon-reload
 systemctl enable ollama
-systemctl start ollama
+systemctl restart ollama
 
 # Wait for Ollama to be ready
 info "Waiting for Ollama to be ready..."
 for i in $(seq 1 15); do
-    if curl -sf http://localhost:11434/ &>/dev/null; then
+    if curl -sf http://localhost:11334/ &>/dev/null; then
         break
     fi
     sleep 2
 done
-curl -sf http://localhost:11434/ &>/dev/null || error "Ollama did not start in time"
+curl -sf http://localhost:11334/ &>/dev/null || error "Ollama did not start in time"
 
 # Pull the embedding model
 if ollama list | grep -q "^$MODEL"; then
