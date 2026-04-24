@@ -117,7 +117,7 @@ conversation" and it will respect that without needing to touch the config.
 ## CLI reference
 
 ```
-claude_brain list [--type decision|fact|todo] [--limit N]
+claude_brain list [--type decision|fact|todo|note] [--limit N]
 claude_brain show ID
 claude_brain search QUERY [--type X] [--limit N]
 claude_brain link FROM_ID TO_ID KIND [--note TEXT]
@@ -129,18 +129,19 @@ claude_brain export [--format markdown|json|dot]
 
 ## MCP tools
 
-These are the functions Claude calls automatically during a conversation. You never need to invoke them yourself — they fire in the background as Claude works.
+These are the functions Claude calls during a conversation. **You never need to invoke them yourself — Claude decides when to fire them based on what's being discussed.** You can also trigger any of them explicitly by just saying so in plain English.
 
-| Tool | What it stores | When Claude calls it |
-|------|---------------|----------------------|
-| `record_decision` | An architectural or technical choice, its rationale, and what was considered and rejected | When a design or technology choice is finalised that you would want to find again later |
-| `record_fact` | A load-bearing fact: API endpoints, invariants, conventions, where things live, non-obvious config | When something true about the system is established or discovered |
-| `record_todo` | A follow-up task that was identified but not done right now | When work is deferred — "we should do X later" |
-| `update_todo` | Changes a todo's status to `active`, `done`, or `cancelled` | When a previously recorded todo is completed or dropped |
-| `link_entries` | A typed edge between two existing entries | After recording an entry, if it clearly connects to an earlier one |
-| `search_memory` | _(read-only)_ Hybrid full-text + vector search across all entries | Before designing something new, or when answering "what did we decide / why / how does X work" |
-| `list_recent_entries` | _(read-only)_ The most recently created entries | To get a quick overview of what has been recorded, or to check what tags are in use |
-| `explore` | _(read-only)_ Graph traversal outward from one entry up to N hops | When an impact or blast-radius question requires following the chain of connections from a single entry |
+| Tool | What it stores | When Claude calls it automatically | Example prompts to trigger it yourself |
+|------|---------------|-----------------------------------|----------------------------------------|
+| `record_decision` | An architectural or technical choice, its rationale, and what was considered and rejected | When a design or technology choice is finalised that you would want to find again later | _"Record that as a decision"_ · _"Save this choice"_ · _"Log why we went with X"_ |
+| `record_fact` | A load-bearing fact: API endpoints, invariants, conventions, where things live, non-obvious config | When something true about the system is established or discovered | _"Record that as a fact"_ · _"Save that convention"_ · _"Remember where X lives"_ |
+| `record_note` | Free-form context from a conversation — explanations, overviews, background that doesn't fit elsewhere | When a conversation surfaces meaningful project context not derivable from the code or git history | _"Note"_ · _"Save that"_ · _"Record this as a note"_ · _"Remember what I just explained"_ |
+| `record_todo` | A follow-up task that was identified but not done right now | When work is deferred — "we should do X later" | _"Add a todo for that"_ · _"Remember to do X"_ · _"Log that as a follow-up"_ |
+| `update_todo` | Changes a todo's status to `active`, `done`, or `cancelled` | When a previously recorded todo is completed or dropped | _"Mark that todo as done"_ · _"Cancel todo 3"_ |
+| `link_entries` | A typed edge between two existing entries | After recording an entry, if it clearly connects to an earlier one | _"Link those two entries"_ · _"Connect that decision to the todo"_ |
+| `search_memory` | _(read-only)_ Hybrid full-text + vector search across all entries | Before designing something new, or when answering "what did we decide / why / how does X work" | _"What do we know about X?"_ · _"What did we decide about Y?"_ · _"Search memory for Z"_ |
+| `list_recent_entries` | _(read-only)_ The most recently created entries | To get a quick overview of what has been recorded, or to check what tags are in use | _"What have we recorded lately?"_ · _"Show recent memory entries"_ |
+| `explore` | _(read-only)_ Graph traversal outward from one entry up to N hops | When an impact or blast-radius question requires following the chain of connections from a single entry | _"What's connected to entry 5?"_ · _"Show everything related to that decision"_ |
 
 ## Edge kinds
 
@@ -174,6 +175,13 @@ related entries so the graph stays connected.
 - `record_fact` for load-bearing facts about this system: API endpoints,
   invariants, conventions, where things live, non-obvious configuration.
 - `record_todo` when we identify follow-up work but don't do it now.
+- `record_note` in two situations:
+  1. **User-triggered**: the user says "note", "record this as a note",
+     "save that", or similar — record immediately without asking.
+  2. **Conservative auto-record**: a conversation surfaces meaningful context
+     about the project (its purpose, structure, history, how something works)
+     that isn't derivable from the code or git history. Summarise it; don't
+     transcribe the raw exchange. Skip ephemeral or obvious content.
 
 ### When to link (without asking)
 
