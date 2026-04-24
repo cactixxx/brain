@@ -6,12 +6,17 @@ related entries so the graph stays connected.
 
 ### When to record (without asking)
 
-- `record_specs` whenever a new feature is requested or an existing feature's
-  behaviour changes. Any user request to add or remove a feature is already an
-  agreement — record it immediately. Include what the feature does, how it
-  works, and what it depends on. When a spec changes, pass `supersedes` with
-  the old spec's id so history is preserved. You may ask clarifying questions
-  before implementing, but the request itself constitutes the spec.
+- `record_specs` whenever a new feature is requested, an existing feature's
+  behaviour changes, or the user describes what the project is or how it works.
+  Any user request to add or remove a feature is already an agreement — record
+  it immediately. When the user describes the project (its purpose, components,
+  or how things fit together), extract each distinct feature or component as a
+  separate `record_specs` call — a single description can produce multiple specs.
+  These descriptions are not decisions; do not call `record_decision` for them.
+  Include what the feature does, how it works, and what it depends on. When a
+  spec changes, pass `supersedes` with the old spec's id so history is preserved.
+  You may ask clarifying questions before implementing, but the request itself
+  constitutes the spec.
   Do NOT call `record_specs` for bug fixes or debugging of existing behaviour.
 - `record_decision` whenever we finalize an architectural or technical choice
   we'd want to find again later. Always include the rationale and what was
