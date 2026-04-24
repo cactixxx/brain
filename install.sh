@@ -4,7 +4,7 @@
 set -euo pipefail
 
 REPO="https://github.com/cactixxx/brain"
-DEST="${BRAIN_INSTALL_DIR:-/root/brain}"
+DEST="${BRAIN_INSTALL_DIR:-$HOME/.brain}"
 MODEL="nomic-embed-text"
 
 info()  { echo "[brain] $*"; }
