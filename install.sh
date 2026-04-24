@@ -38,7 +38,9 @@ echo ""
 echo "  5. Create a Python virtual environment and install dependencies"
 echo "       $DEST/.venv"
 echo ""
-echo "  6. Print the command to register claude_brain with Claude Code"
+echo "  6. Add claude_brain to PATH in ~/.bashrc and ~/.zshrc"
+echo ""
+echo "  7. Print the command to register claude_brain with Claude Code"
 echo ""
 
 read -r -p "Continue? [y/N] " reply
@@ -123,6 +125,15 @@ fi
 cd "$DEST"
 python3 -m venv .venv
 .venv/bin/pip install -q -e .
+
+# Add venv bin to PATH in shell rc files
+EXPORT_LINE="export PATH=\"$DEST/.venv/bin:\$PATH\""
+for RC in "$HOME/.bashrc" "$HOME/.zshrc"; do
+    if [ -f "$RC" ] && ! grep -qF "$DEST/.venv/bin" "$RC"; then
+        echo "$EXPORT_LINE" >> "$RC"
+        info "Added claude_brain to PATH in $RC"
+    fi
+done
 
 # ── Done ─────────────────────────────────────────────────────────────────────
 
