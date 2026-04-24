@@ -1,8 +1,8 @@
 import asyncio
 import httpx
 
-OLLAMA_URL = "http://localhost:11334/api/embeddings"
-MODEL = "nomic-embed-text"
+LLAMA_URL = "http://localhost:8080/v1/embeddings"
+MODEL = "nomic-embed-text-v1.5"
 MAX_EMBED_CHARS = 6000
 _embed_lock = asyncio.Lock()
 
@@ -14,15 +14,16 @@ async def embed(text: str) -> list[float]:
             for attempt in range(3):
                 try:
                     resp = await client.post(
-                        OLLAMA_URL,
-                        json={
-                            "model": MODEL,
-                            "prompt": text,
-                            "options": {"num_ctx": 2048},
-                        },
+                        LLAMA_URL,
+                        json={"model": MODEL, "input": text},
                     )
                     resp.raise_for_status()
-                    return resp.json()["embedding"]
+                    return resp.json()["data"][0]["embedding"]
+                except httpx.ConnectError as e:
+                    raise RuntimeError(
+                        "Cannot reach llama-server at http://localhost:8080. "
+                        "Is it running? Try: systemctl start llamacpp-embed"
+                    ) from e
                 except (httpx.HTTPError, httpx.TimeoutException) as e:
                     if attempt == 2:
                         raise

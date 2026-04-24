@@ -6,19 +6,15 @@ with typed graph edges between entries.
 
 ## The embedding model
 
-claude_brain uses **[nomic-embed-text](https://ollama.com/library/nomic-embed-text)**
-via Ollama to generate vector embeddings for semantic search. A few things worth
-knowing before you install:
+claude_brain uses **[nomic-embed-text-v1.5](https://huggingface.co/nomic-ai/nomic-embed-text-v1.5-GGUF)**
+via **[llama.cpp](https://github.com/ggml-org/llama.cpp)** to generate vector embeddings for semantic search.
 
-- **Small** — the model is ~274 MB on disk. It has 137M parameters, which puts it
-  firmly in the "tiny" category compared to any chat model.
-- **CPU only, no GPU needed** — nomic-embed-text is designed for efficient CPU
-  inference. It runs fine on any Linux server or laptop without a graphics card.
-  Embedding a typical email or code snippet takes a few milliseconds on a modern CPU.
-- **Not a chat model** — it only produces numeric vectors (embeddings). It never
-  generates text, so it has no safety concerns and no prompt-injection surface.
-- **Runs as a local service** — Ollama hosts it on `localhost:11334` and claude_brain
-  calls it over HTTP. Nothing leaves the machine.
+- **Small** — the model is ~270 MB on disk (Q8_0 quantisation). 137M parameters — tiny compared to any chat model.
+- **GPU-aware** — the install script detects your GPU and builds llama.cpp accordingly:
+  NVIDIA → `-DGGML_CUDA=ON`, AMD → `-DGGML_HIPBLAS=ON`, no GPU → `-DGGML_NATIVE=ON` (CPU-optimised).
+- **Not a chat model** — produces only numeric vectors. No text generation, no prompt-injection surface.
+- **Runs as a local service** — llama-server listens on `localhost:8080` and claude_brain
+  calls it over HTTP (`/v1/embeddings`). Nothing leaves the machine.
 
 ## Quick install
 
@@ -33,7 +29,7 @@ Installs to `~/.claude_brain` by default. Override with `CLAUDE_BRAIN_INSTALL_DI
 
 ## Manual install
 
-Requirements: Python 3.11+, [Ollama](https://ollama.com) with `nomic-embed-text` pulled.
+Requirements: Python 3.11+, cmake 3.14+, build-essential, and a running `llama-server` with `nomic-embed-text-v1.5.Q8_0.gguf` on port 8080.
 
 ```bash
 git clone https://github.com/cactixxx/claude_brain ~/.claude_brain
