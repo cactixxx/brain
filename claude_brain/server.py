@@ -13,6 +13,11 @@ DB_PATH = Path(os.path.expanduser(os.environ.get("CLAUDE_BRAIN_DB", "./claude_br
 
 mcp = FastMCP("claude_brain")
 
+# Ensure the DB and schema exist at import time so the file is created even
+# before the first tool call (avoids confusion when the server starts cold).
+_startup_con = connect(DB_PATH)
+_startup_con.close()
+
 
 def _get_con():
     return connect(DB_PATH)
