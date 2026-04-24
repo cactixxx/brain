@@ -4,6 +4,22 @@ A local MCP server that gives Claude Code persistent memory for a project.
 Stores decisions, facts, and todos in SQLite (FTS5 + vector search via sqlite-vec),
 with typed graph edges between entries.
 
+## The embedding model
+
+claude_brain uses **[nomic-embed-text](https://ollama.com/library/nomic-embed-text)**
+via Ollama to generate vector embeddings for semantic search. A few things worth
+knowing before you install:
+
+- **Small** — the model is ~274 MB on disk. It has 137M parameters, which puts it
+  firmly in the "tiny" category compared to any chat model.
+- **CPU only, no GPU needed** — nomic-embed-text is designed for efficient CPU
+  inference. It runs fine on any Linux server or laptop without a graphics card.
+  Embedding a typical email or code snippet takes a few milliseconds on a modern CPU.
+- **Not a chat model** — it only produces numeric vectors (embeddings). It never
+  generates text, so it has no safety concerns and no prompt-injection surface.
+- **Runs as a local service** — Ollama hosts it on `localhost:11334` and claude_brain
+  calls it over HTTP. Nothing leaves the machine.
+
 ## Quick install
 
 Installs all dependencies (Python, Ollama, sqlite3), pulls the embedding model,

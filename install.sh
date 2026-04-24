@@ -10,6 +10,44 @@ MODEL="nomic-embed-text"
 info()  { echo "[claude_brain] $*"; }
 error() { echo "[claude_brain] ERROR: $*" >&2; exit 1; }
 
+# ── Plan ─────────────────────────────────────────────────────────────────────
+
+echo ""
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║              claude_brain installer                          ║"
+echo "╚══════════════════════════════════════════════════════════════╝"
+echo ""
+echo "This script will do the following:"
+echo ""
+echo "  1. Install system packages via apt-get:"
+echo "       git, python3, python3-venv, sqlite3"
+echo ""
+echo "  2. Install Ollama (if not already installed)"
+echo "       Downloads and runs the official Ollama install script"
+echo "       Configures Ollama to listen on port 11334"
+echo "       Enables and starts the Ollama systemd service"
+echo ""
+echo "  3. Pull the embedding model: $MODEL (~274 MB)"
+echo "       CPU-only, no GPU required"
+echo "       Skipped if the model is already present"
+echo ""
+echo "  4. Clone or update claude_brain"
+echo "       Destination: $DEST"
+echo "       Source:      $REPO"
+echo ""
+echo "  5. Create a Python virtual environment and install dependencies"
+echo "       $DEST/.venv"
+echo ""
+echo "  6. Print the command to register claude_brain with Claude Code"
+echo ""
+
+read -r -p "Continue? [y/N] " reply
+echo ""
+case "$reply" in
+    [yY][eE][sS]|[yY]) ;;
+    *) echo "Aborted."; exit 0 ;;
+esac
+
 # ── Prerequisites ────────────────────────────────────────────────────────────
 
 info "Installing system packages..."
@@ -81,7 +119,7 @@ info ""
 info "Installation complete."
 info ""
 info "Register with Claude Code (run inside your project directory):"
-info "  claude mcp add claude_brain $DEST/.venv/bin/python -- -m claude_brain.server --env CLAUDE_BRAIN_DB=./claude_brain.db"
+info "  claude mcp add claude_brain ~/.claude_brain/.venv/bin/python -- -m claude_brain.server --env CLAUDE_BRAIN_DB=~/.claude_brain/claude_brain.db"
 info ""
 info "Or copy the example MCP config:"
-info "  cp $DEST/.mcp.json.example /your/project/.mcp.json"
+info "  cp ~/.claude_brain/.mcp.json.example /your/project/.mcp.json"
