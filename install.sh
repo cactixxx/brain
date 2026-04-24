@@ -138,19 +138,23 @@ fi
 
 SERVICE_FILE="/etc/systemd/system/llamacpp-embed.service"
 
-info "Installing llamacpp-embed systemd service..."
+NPROC=$(nproc)
+info "Installing llamacpp-embed systemd service (threads: $NPROC)..."
 cat > "$SERVICE_FILE" <<EOF
 [Unit]
 Description=llama.cpp embedding server for claude_brain
 After=network.target
+Wants=network.target
 
 [Service]
 Type=simple
 ExecStart=$LLAMA_BIN \\
-    --model $MODEL_FILE \\
-    --embedding \\
+    -m $MODEL_FILE \\
+    --embeddings \\
+    --host 127.0.0.1 \\
     --port $LLAMA_PORT \\
-    --ctx-size 2048
+    -c 2048 \\
+    -t $NPROC
 Restart=on-failure
 RestartSec=5
 StandardOutput=journal
