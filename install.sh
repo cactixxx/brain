@@ -116,8 +116,9 @@ else
 fi
 
 info "Building llama.cpp ($GPU_LABEL)..."
-cmake -B "$LLAMA_DIR/build" -S "$LLAMA_DIR" $CMAKE_GPU_FLAG
-cmake --build "$LLAMA_DIR/build" --config Release -j "$(nproc)"
+cd "$LLAMA_DIR"
+cmake -B build $CMAKE_GPU_FLAG
+cmake --build build --config Release -j "$(nproc)"
 
 LLAMA_BIN="$LLAMA_DIR/build/bin/llama-server"
 [ -x "$LLAMA_BIN" ] || error "Build succeeded but llama-server binary not found at $LLAMA_BIN"
@@ -125,12 +126,14 @@ info "llama-server built: $LLAMA_BIN"
 
 # ── Embedding model ───────────────────────────────────────────────────────────
 
-mkdir -p "$MODEL_DIR"
 if [ -f "$MODEL_FILE" ]; then
     info "Model already present: $MODEL_FILE"
 else
     info "Downloading nomic-embed-text-v1.5.f16.gguf (~270 MB)..."
-    wget -O "$MODEL_FILE" "$MODEL_URL"
+    cd "$LLAMA_DIR"
+    mkdir -p models
+    cd models
+    wget "$MODEL_URL"
     info "Model saved to $MODEL_FILE"
 fi
 
