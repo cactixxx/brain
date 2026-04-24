@@ -9,11 +9,44 @@ from claude_brain.db import (connect, get_entry, list_recent, query_edges, trave
                       create_edge, delete_edge, hybrid_search, search_fts)
 from claude_brain.embeddings import embed_sync
 
-DB_PATH = Path(os.environ.get("CLAUDE_BRAIN_DB", "./claude_brain.db"))
+
+def _resolve_db_path() -> Path:
+    if "CLAUDE_BRAIN_DB" in os.environ:
+        return Path(os.environ["CLAUDE_BRAIN_DB"])
+
+    # Search cwd and parents for .mcp.json
+    for directory in [Path.cwd(), *Path.cwd().parents]:
+        candidate = directory / ".mcp.json"
+        if candidate.exists():
+            try:
+                data = json.loads(candidate.read_text())
+                db = data["mcpServers"]["claude_brain"]["env"]["CLAUDE_BRAIN_DB"]
+                return Path(db)
+            except (KeyError, json.JSONDecodeError):
+                break
+
+    # Fall back to prompting the user
+    click.echo(
+        "CLAUDE_BRAIN_DB is not set and no .mcp.json was found in the current "
+        "directory or its parents.",
+        err=True,
+    )
+    project_dir = click.prompt("Enter the path to your project directory", err=True)
+    mcp_path = Path(project_dir).expanduser() / ".mcp.json"
+    if not mcp_path.exists():
+        click.echo(f"No .mcp.json found in {mcp_path.parent}", err=True)
+        sys.exit(1)
+    try:
+        data = json.loads(mcp_path.read_text())
+        db = data["mcpServers"]["claude_brain"]["env"]["CLAUDE_BRAIN_DB"]
+        return Path(db)
+    except (KeyError, json.JSONDecodeError, OSError) as exc:
+        click.echo(f"Could not read CLAUDE_BRAIN_DB from {mcp_path}: {exc}", err=True)
+        sys.exit(1)
 
 
 def _con():
-    return connect(DB_PATH)
+    return connect(_resolve_db_path())
 
 
 def _fmt_ts(ts: int) -> str:
@@ -201,9 +234,10 @@ def stats():
     total_vecs = con.execute("SELECT COUNT(*) FROM entries_vec").fetchone()[0]
     con.close()
 
-    db_size = DB_PATH.stat().st_size if DB_PATH.exists() else 0
+    db_path = _resolve_db_path()
+    db_size = db_path.stat().st_size if db_path.exists() else 0
 
-    click.echo(f"DB path  : {DB_PATH}  ({db_size // 1024} KB)")
+    click.echo(f"DB path  : {db_path}  ({db_size // 1024} KB)")
     click.echo(f"Entries  : {total_entries}  (embeddings: {total_vecs})")
     click.echo(f"  by type  : {type_counts}")
     click.echo(f"  by status: {status_counts}")
