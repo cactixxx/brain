@@ -50,6 +50,13 @@ Confirm everything works:
 
 ## Register in a project
 
+The project directory where you start Claude doesn't have to contain all the
+files you work on. Claude Code can read and edit files anywhere on the
+filesystem — the start directory just determines which `.mcp.json` and
+`CLAUDE.md` are loaded. For example, you might start Claude in
+`/project/scripts` (where your config lives) but spend the session editing
+files under `/build` and `/usr/src/myapp`.
+
 **Option A — copy the example config:**
 
 ```bash
