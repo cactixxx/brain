@@ -135,13 +135,30 @@ for RC in "$HOME/.bashrc" "$HOME/.zshrc"; do
     fi
 done
 
+# ── Generate .mcp.json with absolute paths ───────────────────────────────────
+
+cat > "$DEST/.mcp.json" <<EOF
+{
+  "mcpServers": {
+    "claude_brain": {
+      "command": "$DEST/.venv/bin/python",
+      "args": ["-m", "claude_brain.server"],
+      "env": {
+        "CLAUDE_BRAIN_DB": "$DEST/claude_brain.db"
+      }
+    }
+  }
+}
+EOF
+info "Generated $DEST/.mcp.json with absolute paths."
+
 # ── Done ─────────────────────────────────────────────────────────────────────
 
 info ""
 info "Installation complete."
 info ""
 info "Register with Claude Code (run inside your project directory):"
-info "  claude mcp add claude_brain ~/.claude_brain/.venv/bin/python -- -m claude_brain.server --env CLAUDE_BRAIN_DB=~/.claude_brain/claude_brain.db"
+info "  claude mcp add claude_brain $DEST/.venv/bin/python -- -m claude_brain.server --env CLAUDE_BRAIN_DB=$DEST/claude_brain.db"
 info ""
-info "Or copy the example MCP config:"
-info "  cp ~/.claude_brain/.mcp.json.example /your/project/.mcp.json"
+info "Or copy the generated MCP config into your project:"
+info "  cp $DEST/.mcp.json /your/project/.mcp.json"
