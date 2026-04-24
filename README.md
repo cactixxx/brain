@@ -4,25 +4,26 @@ A local MCP server that gives Claude Code persistent memory for a project.
 Stores decisions, facts, and todos in SQLite (FTS5 + vector search via sqlite-vec),
 with typed graph edges between entries.
 
-## Requirements
+## Quick install
 
-- Python 3.11+
-- [Ollama](https://ollama.com) running locally with `nomic-embed-text` pulled
-
-## Install
+Installs all dependencies (Python, Ollama, sqlite3), pulls the embedding model,
+and sets Ollama to start on boot:
 
 ```bash
-git clone <repo> ~/brain
-cd ~/brain
-python3 -m venv .venv
-.venv/bin/pip install -e .
+bash <(curl -fsSL https://raw.githubusercontent.com/cactixxx/brain/master/install.sh)
 ```
 
-Verify Ollama and the model:
+Installs to `~/.brain` by default. Override with `BRAIN_INSTALL_DIR=/custom/path`.
+
+## Manual install
+
+Requirements: Python 3.11+, [Ollama](https://ollama.com) with `nomic-embed-text` pulled.
 
 ```bash
-ollama list          # should show nomic-embed-text
-ollama serve &       # if not already running
+git clone https://github.com/cactixxx/brain ~/.brain
+cd ~/.brain
+python3 -m venv .venv
+.venv/bin/pip install -e .
 ```
 
 Confirm everything works:
@@ -45,7 +46,7 @@ cp ~/brain/.mcp.json.example /your/project/.mcp.json
 ```bash
 cd /your/project
 claude mcp add project-brain \
-  /root/brain/.venv/bin/python -- -m brain.server
+  ~/.brain/.venv/bin/python -- -m brain.server
 ```
 
 Then set `BRAIN_DB` in the server env or export it in your shell.
