@@ -6,9 +6,9 @@ set -euo pipefail
 REPO="https://github.com/cactixxx/claude_brain"
 DEST="${CLAUDE_BRAIN_INSTALL_DIR:-$HOME/.claude_brain}"
 LLAMA_DIR="$HOME/llama.cpp"
-MODEL_DIR="$DEST/models"
-MODEL_FILE="$MODEL_DIR/nomic-embed-text-v1.5.Q8_0.gguf"
-MODEL_URL="https://huggingface.co/nomic-ai/nomic-embed-text-v1.5-GGUF/resolve/main/nomic-embed-text-v1.5.Q8_0.gguf"
+MODEL_DIR="$LLAMA_DIR/models"
+MODEL_FILE="$MODEL_DIR/nomic-embed-text-v1.5.f16.gguf"
+MODEL_URL="https://huggingface.co/nomic-ai/nomic-embed-text-v1.5-GGUF/resolve/main/nomic-embed-text-v1.5.f16.gguf"
 LLAMA_PORT=8080
 
 info()  { echo "[claude_brain] $*"; }
@@ -61,7 +61,7 @@ echo "       GPU detected: $GPU_LABEL"
 echo "       cmake flag:   $CMAKE_GPU_FLAG"
 echo ""
 echo "  3. Download embedding model (~270 MB)"
-echo "       nomic-embed-text-v1.5.Q8_0.gguf"
+echo "       nomic-embed-text-v1.5.f16.gguf"
 echo "       Destination: $MODEL_FILE"
 echo "       Skipped if already present"
 echo ""
@@ -92,7 +92,7 @@ esac
 info "Installing system packages..."
 apt-get update -qq
 apt-get install -y -qq \
-    git python3 python3-venv sqlite3 \
+    git python3 python3-venv sqlite3 wget \
     cmake build-essential libcurl4-openssl-dev
 
 # Python version check
@@ -129,8 +129,8 @@ mkdir -p "$MODEL_DIR"
 if [ -f "$MODEL_FILE" ]; then
     info "Model already present: $MODEL_FILE"
 else
-    info "Downloading nomic-embed-text-v1.5.Q8_0.gguf (~270 MB)..."
-    curl -L --progress-bar -o "$MODEL_FILE" "$MODEL_URL"
+    info "Downloading nomic-embed-text-v1.5.f16.gguf (~270 MB)..."
+    wget -O "$MODEL_FILE" "$MODEL_URL"
     info "Model saved to $MODEL_FILE"
 fi
 

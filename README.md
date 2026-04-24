@@ -9,7 +9,7 @@ with typed graph edges between entries.
 claude_brain uses **[nomic-embed-text-v1.5](https://huggingface.co/nomic-ai/nomic-embed-text-v1.5-GGUF)**
 via **[llama.cpp](https://github.com/ggml-org/llama.cpp)** to generate vector embeddings for semantic search.
 
-- **Small** — the model is ~270 MB on disk (Q8_0 quantisation). 137M parameters — tiny compared to any chat model.
+- **Small** — the model is ~270 MB on disk (F16). 137M parameters — tiny compared to any chat model.
 - **GPU-aware** — the install script detects your GPU and builds llama.cpp accordingly:
   NVIDIA → `-DGGML_CUDA=ON`, AMD → `-DGGML_HIPBLAS=ON`, no GPU → `-DGGML_NATIVE=ON` (CPU-optimised).
 - **Not a chat model** — produces only numeric vectors. No text generation, no prompt-injection surface.
@@ -29,7 +29,7 @@ Installs to `~/.claude_brain` by default. Override with `CLAUDE_BRAIN_INSTALL_DI
 
 ## Manual install
 
-Requirements: Python 3.11+, cmake 3.14+, build-essential, and a running `llama-server` with `nomic-embed-text-v1.5.Q8_0.gguf` on port 8080.
+Requirements: Python 3.11+, cmake 3.14+, build-essential, and a running `llama-server` with `nomic-embed-text-v1.5.f16.gguf` on port 8080.
 
 ```bash
 git clone https://github.com/cactixxx/claude_brain ~/.claude_brain
